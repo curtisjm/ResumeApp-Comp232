@@ -1,6 +1,5 @@
-import io.minio.DownloadObjectArgs;
-import io.minio.MinioClient;
-import io.minio.UploadObjectArgs;
+import io.minio.*;
+import io.minio.messages.Item;
 
 import java.util.Scanner;
 
@@ -10,7 +9,7 @@ public class Driver {
     private String input;
     private MinioClient minioClient = MinioClient.builder()
             .endpoint("http://localhost:9000")
-            .credentials("minioadmin", "minioadmin")
+            .credentials("admin", "Nelsondog7")
             .build();
 
     private void uploadFile() {
@@ -60,14 +59,28 @@ public class Driver {
         mainMenu();
     }
 
+    private void listObjects() {
+        System.out.println();
+        System.out.println("--- File List ---");
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(ListObjectsArgs.builder().bucket("test-bucket").recursive(true).build());
+            for(Result<Item> i : results) {
+                System.out.println(i.get().objectName());
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        mainMenu();
+    }
+
     private void mainMenu() {
         System.out.println();
         System.out.println("--- Main Menu ---");
-        System.out.println("Would you like to upload a file or download a file? (Enter \"up\" or \"down\"). Type \"stop\" to stop the program.");
+        System.out.println("Would you like to upload a file or download a file? (Enter \"up\" or \"down\") You can also list all files by typing \"list\". Type \"stop\" to stop the program.");
         input = scan.nextLine();
 
-        while(!input.equalsIgnoreCase("up") && !input.equalsIgnoreCase("down") && !input.equalsIgnoreCase("end")) {
-            System.out.println("Invalid input. Enter \"up\" or \"down\"");
+        while(!input.equalsIgnoreCase("up") && !input.equalsIgnoreCase("down") && !input.equalsIgnoreCase("end") && !input.equalsIgnoreCase("list")) {
+            System.out.println("Invalid input. Enter \"up\", \"down\", or \"list\".");
             input = scan.nextLine();
         }
 
@@ -75,6 +88,8 @@ public class Driver {
             case "up": uploadFile();
                 break;
             case "down": downloadFile();
+                break;
+            case "list": listObjects();
                 break;
             case "end":
                 System.out.println("Ending program...");
